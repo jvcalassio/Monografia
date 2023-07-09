@@ -115,7 +115,7 @@ This procedure is made by:
 
     \item Add the new statements to the method body
 
-    After all the new statements are created, the last step is to add them to the method body. It's done by using Soot's \ic{insertBeforeNoRedirect} method, where a list of statements is passed to be inserted before an existing statement (in this case, before the relevant method invocation).
+    After all the new statements are created, the last step is to add them to the method body. It's done by using Soot's \ic{insertBeforeNoRedirect} method, where a list of statements is passed to be inserted before an existing statement (in this case, before the relevant method invocation). A code example can be seen on listing \ref{lst:apitracker-stmt-insert}.
 \end{enumerate}
 
 \begin{lstlisting}[language=java, basicstyle={\small\ttfamily}, moredelim={[is][\color{red}]{STARTRC}{ENDRC}}, caption={Local variable creation, along with initialization statement and assignment statement using Soot}\label{lst:apitracker-array-create}]
@@ -149,7 +149,7 @@ AssignStmt assignArrToLocal = Jimple
 stmtList.add(assignArrToLocal);
 \end{lstlisting}
 
-\begin{lstlisting}[language=java, basicstyle={\small\ttfamily}, moredelim={[is][\color{red}]{STARTRC}{ENDRC}}, caption={Statements insertion before an existing statement using Soot}\label{lst:apitracker-array-create}]
+\begin{lstlisting}[language=java, basicstyle={\small\ttfamily}, moredelim={[is][\color{red}]{STARTRC}{ENDRC}}, caption={Statements insertion before an existing statement using Soot}\label{lst:apitracker-stmt-insert}]
 PatchingChain<Unit> pchn = body.getUnits();
 				
 Iterator<Unit> itchain = pchn.snapshotIterator();    
