@@ -556,8 +556,8 @@
 
 \newenvironment{agradecimentos}
 	{\begin{paginatitulo}%
-	\pdfbookmark{IfLanguageName{american}{Acknowledgements}{Agradecimentos}}{acknowledgements}%
-		\chapter*{IfLanguageName{american}{Acknowledgements}{Agradecimentos}}}%
+	\pdfbookmark{\en{Acknowledgements}\br{Agradecimentos}}{acknowledgements}%
+		\chapter*{\en{Acknowledgements}\br{Agradecimentos}}}%
 	{\end{paginatitulo}}
 
 \renewenvironment{abstract}
@@ -578,8 +578,8 @@
 
 \newenvironment{dedicatoria}
 	{\begin{paginatitulo}%
-	\pdfbookmark{IfLanguageName{american}{Dedicated to}{Dedicat\'oria}}{dedication}%
-		\chapter*{IfLanguageName{american}{Dedicated to}{Dedicat\'oria}}}%
+	\pdfbookmark{\en{Dedicated to}\br{Dedicat\'oria}}{dedication}%
+		\chapter*{\en{Dedicated to}\br{Dedicat\'oria}}}%
 	{\end{paginatitulo}}
 
 \def\@printfulltitle{%
