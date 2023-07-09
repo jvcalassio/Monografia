@@ -1,0 +1,160 @@
+\section{Study settings}
+
+% describe the used study settings, and the results presented in previous works
+
+The main goal of this empirical study is to investigate if the performance of the Mining Android Sandboxes technique for malware identification can be improved by capturing and comparing the arguments passed to sensitive API calls. The MAS approach have already shown its potential for malware identification on Bao et al.'s study \cite{bao_mining_2018}, and Costa et al. have shown that it can be improved by combining it with static analysis tools \cite{costa_exploring_2022}.
+
+% should I add a subsection to talk about the previous settings/results
+
+This research was performed alongside with an ongoing doctoral thesis that analyzed the combination of both static and dynamic analysis proposed at \cite{costa_exploring_2022} approach on a larger dataset of 1,707 pairs and the influence of the malware family on the detection.
+
+This dataset was derived from a bigger curated dataset of 15,297 pair of original/repackaged Android apps extracted from the Androzoo repository \cite{allix_androzoo_2016}, and were filtered considering a random sampling of 5,700 pairs. From there, 3,381 samples were removed because of incompatibilities with either DroidFax instrumentation or the used Android SDK version. The remaining 2,319 samples had their APKs that were labeled as ``benign'' submitted to VirusTotal \cite{noauthor_about_nodate}, a service that analyzes files and URLs and detects malicious content using over 70 antivirus engines \cite{khanmohammadi_empirical_2019}, and any pair that VirusTotal accused the benign version to be a malware were removed, resulting in 1,707 pairs. This last step was necessary because the MAS approach assumes that the benign version of the app is actually legitimate. %Finally the exclusion of the pairs that had the original app being marked as malware in VirusTotal repository.
+% [On previous works at ??? ] The MAS approach has been used for malware detection by comparing the methods used by an original and a repackaged version of the same application. For that, a dataset of 1,707 apps has been used. This dataset is derived from a bigger curated dataset of 15,297 pair of original/repackaged Android apps extracted from the Androzoo repository, and were filtered considering a random sampling of 5,700 pairs, then the removal of failed 3,381 samples and finally the exclusion of the pairs that had the original app being marked as malware in VirusTotal repository.
+
+% add curated list ref
+% add Androzoo repo ref
+% add VirusTotal ref
+
+% talk about how this dataset performed in the previous MAS, and the prevalent APIs
+% The original study at [??] only considers the repackaged version of an app as malware if \textit{VirusTotal} reports that at least two antivirus vendors had identified it as malware. In this dataset, a total of 490 apps were considered malware. From that, 295 malicious repackaged apps were from the \textit{gappusin} family.
+
+%This dataset was then submitted through DroidXP to verify the assertiveness of the MAS approach for malware detection, and the author found out that this approach was not effective in detecting the malwares from the \textit{gappusin} family. From the 295 \textit{gappusin} samples, only 26 were detected as malware by comparing the sensitive API calls that were added in the repackaged version of the app.
+
+% talk that we'll perform the experiment using the same settings
+The ongoing study also only considers the malicious version to actually be malicious when at least two antivirus engines used by VirusTotal label it as malicious. This was the case for 490 pairs. 
+
+The 1,707 pairs of apps were submitted to the new version of DroidXP, and the sensitive methods called were captured (with and without the arguments), to determine if the proposed approach of verifying the arguments passed to sensitive API calls can improve the accuracy of the malware detection.
+
+After the execution, the pairs were labeled regarding the malware family, the presence of malware according to VirusTotal verification, the presence of malware considering the difference of sensitive method calls only, and the presence of malware considering the arguments passed to the sensitive methods.
+
+% present the RQs
+This brings us to the following research questions (RQ):
+
+\begin{enumerate}
+    \item How does comparing arguments passed to sensitive API calls impact the results of the MAS approach regarding the detection of Android malware?
+    \item How does the malware family influence the performance of this technique?
+\end{enumerate}
+
+% talk about the data collection
+\subsection{Data Collection}
+
+The data for the exploratory analysis was collected by submitting the 1,707 pairs of apps through the modified version of DroidXP. The execution of each pair goes as follows:
+
+\begin{enumerate}
+    \item Instrumentation: in this step, every APK sample is instrumented using DroidFax, by passing the correct parameters to allow the API Tracker module to be executed. It's executed only once per version of each app, given that the results would be the same for every execution.
+    \item Execution: in this step, DroidXP executes the instrumented APKs on an Android emulator for the specified time, and collects the relevant logs through \textit{logcat}. The emulator used was running at API 28 (Android 9). It's important to remember that DroidXP wipes the emulator data after every execution to avoid interference (such as caches) between the apps.
+    \item Reporting: this step collects the generated logs and other relevant data generated at the instrumentation step (static analysis results, for example) and groups them for each version of each app, separated by execution.
+\end{enumerate}
+
+DroidXP was configured to execute every sample 3 times, for 180 seconds using the DroidBot as test case generation tool, and passing the \ic{-p} flag to enable the argument capturing.
+
+After DroidXP finished its execution, the results were submitted to the report generator tool to compute the difference of method calls (and arguments passed). If at least one method differ, the app is considered to be malicious.
+
+\section{Exploratory analysis}
+
+%tell how my evaluation went, using the same study settings in comparison with the previous work. tell my results, along with some malware examples collected and some interesting parameters
+After the execution, the results were aggregated and the assertiveness of both approaches were compared. The confusion matrices of each one can be seen on the tables \ref{tab:prev-confusion-matrix} and \ref{tab:new-confusion-matrix} for the approach without and with arguments, respectively.
+
+By comparing only the difference of methods called between each version of each app, the MAS approach have labeled 403 apps as malware, from which 151 (37.47\%) were correct. It also didn't label 1,304 apps as malware, from which 965 (74\%) are correct. This brings us to an overall accuracy of 65.38\%.
+
+When combining the presented results with the results generated by also considering as malware any difference on the arguments passed to these methods (i.e. an app is considered to be a malware if there's a difference on the sensitive methods called \textbf{or} there's a difference on the arguments passed to sensitive methods), the MAS approach labeled a total of 513 apps as malwaer, from which 236 (46\%) are correct. The remaining 1,194 apps aren't labeled as malware, from which 940 (78.73\%) are considered to be correct. This gets an overall accuracy of 68.89\%, an improvement of 3.51\% if compared to the previous approach. 
+
+This answers our first research question: 
+
+\begin{enumerate}
+    \item How does comparing arguments passed to sensitive API calls impact the results of the MAS approach regarding the detection of Android malware?
+
+    The analysis show that there's a slight performance improvement, specially regarding the true-positive dimension with 85 additional cases detected when taking into account the difference of arguments. 
+\end{enumerate}
+
+\begin{table}[]
+\centering
+\caption{Accuracy of the MAS approach comparing the different API calls}
+\label{tab:prev-confusion-matrix}
+\begin{tabular}{llll}
+                                                &                               & \multicolumn{2}{c}{reference}                                 \\ \cline{3-4} 
+                                                & \multicolumn{1}{l|}{}         & \multicolumn{1}{c|}{negative} & \multicolumn{1}{c|}{positive} \\ \cline{2-4} 
+\multicolumn{1}{c|}{\multirow{2}{*}{predicted}} & \multicolumn{1}{c|}{negative} & \multicolumn{1}{l|}{965}      & \multicolumn{1}{l|}{339}      \\ \cline{2-4} 
+\multicolumn{1}{c|}{}                           & \multicolumn{1}{c|}{positive} & \multicolumn{1}{l|}{252}      & \multicolumn{1}{l|}{151}      \\ \cline{2-4} 
+\end{tabular}
+\end{table}
+
+\begin{table}[]
+\centering
+\caption{Accuracy of the MAS approach comparing the different API calls and different arguments passed}
+\label{tab:new-confusion-matrix}
+\begin{tabular}{llll}
+                                                &                               & \multicolumn{2}{c}{reference}                                 \\ \cline{3-4} 
+                                                & \multicolumn{1}{l|}{}         & \multicolumn{1}{c|}{negative} & \multicolumn{1}{c|}{positive} \\ \cline{2-4} 
+\multicolumn{1}{c|}{\multirow{2}{*}{predicted}} & \multicolumn{1}{c|}{negative} & \multicolumn{1}{l|}{940}      & \multicolumn{1}{l|}{254}      \\ \cline{2-4} 
+\multicolumn{1}{c|}{}                           & \multicolumn{1}{c|}{positive} & \multicolumn{1}{l|}{277}      & \multicolumn{1}{l|}{236}      \\ \cline{2-4} 
+\end{tabular}
+\end{table}
+
+The results presented above are regarding a random distribution of malware, and doesn't consider the internal functionality of each malware family. The proposed approach may have different results depending on how each type of malware acts on the devices. For that reason, a new analysis was made grouping the results based on the malware family, in order to investigate if the comparison of arguments passed to sensitive methods can improve the performance of the detection of certain types of malware. This new arrangement can be seen on the table \ref{tab:per-family-results}, where the 490 malicious apps are classified based on the malware family, and the detection results using both approaches (only comparing sensitive methods difference, and comparing both the methods and the arguments difference).
+
+Considering the families with more than five samples, it considerably improved (20\% or more) the detection performance of the \textit{smsreg}, \textit{dowgin}, \textit{appad} and \textit{cauly} families. There was also some improvement on the detection of the \textit{revmob} and \textit{gappusin} malwares, but less expressive. However, some other malware families weren't able to be detected even using this new approach, which is the case for the \textit{kuguo} family.
+
+With that, it's possible to answer the second research question:
+
+\begin{enumerate}
+    \item How does the malware family influence the performance of this technique?
+
+    The acquired results indicates that there's a big influence of the malware family on the performance of this technique. The detection improves the results of the previous technique by a larger margin on some families, such as \textit{smsreg} that improved 69.23\%, while having less impact on some other families such as \textit{revmob}, with 6.45\% improvement or \textit{kuguo} with 0\%.
+\end{enumerate}
+
+
+% maybe order by sample count descending > new accuracy descending > lexicographically ascending ????
+\begin{table}[]
+\centering
+\caption{Accuracy of the MAS approach with and without argument catching, per malware family}
+\label{tab:per-family-results}
+\begin{tabular}{|l|l|l|l|}
+\hline
+\textbf{Malware family} & \textbf{Samples} & \textbf{New accuracy} & \textbf{Previous accuracy} \\ \hline
+gappusin                & 295              & 22.71\%               & 9.49\%                     \\ \hline
+revmob                  & 31               & 96.77\%               & 90.32\%                    \\ \hline
+dowgin                  & 25               & 72.00\%               & 52.00\%                    \\ \hline
+airpush                 & 21               & 100.00\%              & 100.00\%                   \\ \hline
+leadbolt                & 13               & 100.00\%              & 100.00\%                   \\ \hline
+smsreg                  & 13               & 84.62\%               & 15.38\%                    \\ \hline
+cauly                   & 7                & 85.71\%               & 0.00\%                     \\ \hline
+kuguo                   & 7                & 85.71\%               & 85.71\%                    \\ \hline
+adwo                    & 6                & 100.00\%              & 100.00\%                   \\ \hline
+domob                   & 6                & 100.00\%              & 100.00\%                   \\ \hline
+appad                   & 6                & 66.67\%               & 0.00\%                     \\ \hline
+youmi                   & 6                & 66.67\%               & 50.00\%                    \\ \hline
+torjok                  & 4                & 50.00\%               & 0.00\%                     \\ \hline
+plankton                & 3                & 100.00\%              & 100.00\%                   \\ \hline
+shixot                  & 3                & 100.00\%              & 0.00\%                     \\ \hline
+viser                   & 3                & 100.00\%              & 100.00\%                   \\ \hline
+wooboo                  & 3                & 100.00\%              & 100.00\%                   \\ \hline
+dnotua                  & 3                & 66.67\%               & 66.67\%                    \\ \hline
+droidkungfu             & 3                & 66.67\%               & 66.67\%                    \\ \hline
+boogr                   & 2                & 100.00\%              & 50.00\%                    \\ \hline
+douwan                  & 2                & 100.00\%              & 0.00\%                     \\ \hline
+pushad                  & 2                & 100.00\%              & 100.00\%                   \\ \hline
+smspay                  & 2                & 100.00\%              & 100.00\%                   \\ \hline
+stopsms                 & 2                & 100.00\%              & 0.00\%                     \\ \hline
+leadb                   & 2                & 50.00\%               & 0.00\%                     \\ \hline
+smalihook               & 2                & 50.00\%               & 50.00\%                    \\ \hline
+antilvl                 & 1                & 100.00\%              & 0.00\%                     \\ \hline
+appax                   & 1                & 100.00\%              & 0.00\%                     \\ \hline
+appflood                & 1                & 100.00\%              & 100.00\%                   \\ \hline
+appsgeyser              & 1                & 100.00\%              & 100.00\%                   \\ \hline
+autosms                 & 1                & 100.00\%              & 0.00\%                     \\ \hline
+dianle                  & 1                & 100.00\%              & 100.00\%                   \\ \hline
+elfan                   & 1                & 100.00\%              & 100.00\%                   \\ \hline
+flurry                  & 1                & 100.00\%              & 100.00\%                   \\ \hline
+ginmaster               & 1                & 100.00\%              & 0.00\%                     \\ \hline
+inmobi                  & 1                & 100.00\%              & 0.00\%                     \\ \hline
+lzla                    & 1                & 100.00\%              & 0.00\%                     \\ \hline
+madad                   & 1                & 100.00\%              & 0.00\%                     \\ \hline
+pircob                  & 1                & 100.00\%              & 0.00\%                     \\ \hline
+uapush                  & 1                & 100.00\%              & 100.00\%                   \\ \hline
+basebridge              & 1                & 0.00\%                & 0.00\%                     \\ \hline
+odpa                    & 1                & 0.00\%                & 0.00\%                     \\ \hline
+ramnit                  & 1                & 0.00\%                & 0.00\%                     \\ \hline
+uten                    & 1                & 0.00\%                & 0.00\%                     \\ \hline
+\end{tabular}
+\end{table}
