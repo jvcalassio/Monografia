@@ -28,32 +28,39 @@ The argument array is converted into a comma separated string, by transforming e
 
 The method and the string representing the arguments are then logged using Android's own logging API, so they can be retrieved by DroidXP.
 
-\begin{lstlisting}[language=java, basicstyle={\small\ttfamily}, moredelim={[is][\color{red}]{STARTRC}{ENDRC}}, caption={Source code of the implementation of the \textit{apiCall} method.}\label{lst:apitracker-monitor-impl}]
-private static void apiCall_impl(String methodSignature, 
-                                 Object[] params) {
-    try {
-        String args = "";
-        for (Object param : params) {
-            if (param == null) {
-                args += "null" + ", ";
-            } else {
-                args += "\"" + param.toString()
-                    .replaceAll("\"", "\\\\\"")
-                    .replaceAll("\n", "\\\\\\\\n") + "\", ";
-            }
-        }
+\begin{figure}
+    \centering
+    \includegraphics{img/api_monitor_impl.png}
+    \caption{Source code of the implementation of the \textit{apiCall} method.}
+    \label{lst:apitracker-monitor-impl}
+\end{figure}
 
-        if (args.length() >= 2) {
-            args = args.substring(0, args.length() - 2);
-        }
+% \begin{lstlisting}[language=java, basicstyle={\small\ttfamily}, moredelim={[is][\color{red}]{STARTRC}{ENDRC}}, caption={Source code of the implementation of the \textit{apiCall} method.}\label{lst:apitracker-monitor-impl}]
+% private static void apiCall_impl(String methodSignature, 
+%                                  Object[] params) {
+%     try {
+%         String args = "";
+%         for (Object param : params) {
+%             if (param == null) {
+%                 args += "null" + ", ";
+%             } else {
+%                 args += "\"" + param.toString()
+%                     .replaceAll("\"", "\\\\\"")
+%                     .replaceAll("\n", "\\\\\\\\n") + "\", ";
+%             }
+%         }
 
-        android.util.Log.i("apicall-monitor", 
-            "[API-TRACK]: " + methodSignature + " => " + args);
-    } catch (Exception e) {
-        e.printStackTrace();
-    }
-}
-\end{lstlisting}
+%         if (args.length() >= 2) {
+%             args = args.substring(0, args.length() - 2);
+%         }
+
+%         android.util.Log.i("apicall-monitor", 
+%             "[API-TRACK]: " + methodSignature + " => " + args);
+%     } catch (Exception e) {
+%         e.printStackTrace();
+%     }
+% }
+% \end{lstlisting}
 
 The \ic{methodSignature} string expects the signature of the method that was called. 
 
@@ -91,7 +98,7 @@ This procedure is made by:
     
     Soot's \ic{generateLocal} method creates a local variable into the inspected method's body. This variable is typed as an array of \ic{Object}, and is initialized using a \ic{newArrayExpr}, that creates an empty array with a fixed length. The length of the array is equal to the number of arguments passed to the method that's being tracked. 
 
-    All those steps are performed by creating Soots' statements that will be later inserted into the actual method body. An example of statement creation using Soot can be seen at \ref{lst:apitracker-array-create}.
+    All those steps are performed by creating Soots' statements that will be later inserted into the actual method body. An example of statement creation using Soot can be seen at Figure \ref{lst:apitracker-array-create}.
    
     \item Iterating through the arguments passed to the relevant method: 
 
@@ -118,53 +125,67 @@ This procedure is made by:
     After all the new statements are created, the last step is to add them to the method body. It's done by using Soot's \ic{insertBeforeNoRedirect} method, where a list of statements is passed to be inserted before an existing statement (in this case, before the relevant method invocation). A code example can be seen on listing \ref{lst:apitracker-stmt-insert}.
 \end{enumerate}
 
-\begin{lstlisting}[language=java, basicstyle={\small\ttfamily}, moredelim={[is][\color{red}]{STARTRC}{ENDRC}}, caption={Local variable creation, along with initialization statement and assignment statement using Soot}\label{lst:apitracker-array-create}]
-// sMethod is any instance of SootMethod
-Body body = sMethod.retrieveActiveBody();
-LocalGenerator bodyGenerator = new LocalGenerator(body);
-List<Stmt> stmtList = new ArrayList<Stmt>();
+\begin{figure}
+    \centering
+    \includegraphics{img/apicall_array_create.png}
+    \caption{Local variable creation, along with initialization statement and assignment statement using Soot}
+    \label{lst:apitracker-array-create}
+\end{figure}
 
-// create Object[] variable (uninitialized)
-Local arrLocal = bodyGenerator
-    .generateLocal(ArrayType.v(
-        RefType.v("java.lang.Object"), 1)
-    );
+% \begin{lstlisting}[language=java, basicstyle={\small\ttfamily}, moredelim={[is][\color{red}]{STARTRC}{ENDRC}}, caption={Local variable creation, along with initialization statement and assignment statement using Soot}\label{lst:apitracker-array-create}]
+% // sMethod is any instance of SootMethod
+% Body body = sMethod.retrieveActiveBody();
+% LocalGenerator bodyGenerator = new LocalGenerator(body);
+% List<Stmt> stmtList = new ArrayList<Stmt>();
 
-int arrayLength = 3;
-// create new Object[3] initialization expression
-NewArrayExpr arrExpr = Jimple
-    .v()
-    .newNewArrayExpr(
-        RefType.v("java.lang.Object"), 
-        IntConstant.v(arrayLength)
-    );
+% // create Object[] variable (uninitialized)
+% Local arrLocal = bodyGenerator
+%     .generateLocal(ArrayType.v(
+%         RefType.v("java.lang.Object"), 1)
+%     );
 
-// assign the initialization to the variable
-AssignStmt assignArrToLocal = Jimple
-    .v()
-    .newAssignStmt(arrLocal, arrExpr);
+% int arrayLength = 3;
+% // create new Object[3] initialization expression
+% NewArrayExpr arrExpr = Jimple
+%     .v()
+%     .newNewArrayExpr(
+%         RefType.v("java.lang.Object"), 
+%         IntConstant.v(arrayLength)
+%     );
 
-// add the Object[] arrLocal = new Object[3] to
-// our to-be-inserted statement list
-stmtList.add(assignArrToLocal);
-\end{lstlisting}
+% // assign the initialization to the variable
+% AssignStmt assignArrToLocal = Jimple
+%     .v()
+%     .newAssignStmt(arrLocal, arrExpr);
 
-\begin{lstlisting}[language=java, basicstyle={\small\ttfamily}, moredelim={[is][\color{red}]{STARTRC}{ENDRC}}, caption={Statements insertion before an existing statement using Soot}\label{lst:apitracker-stmt-insert}]
-PatchingChain<Unit> pchn = body.getUnits();
+% // add the Object[] arrLocal = new Object[3] to
+% // our to-be-inserted statement list
+% stmtList.add(assignArrToLocal);
+% \end{lstlisting}
+
+\begin{figure}
+    \centering
+    \includegraphics{img/apicall_insert.png}
+    \caption{Statements insertion before an existing statement using Soot}
+    \label{lst:apitracker-stmt-insert}
+\end{figure}
+
+% \begin{lstlisting}[language=java, basicstyle={\small\ttfamily}, moredelim={[is][\color{red}]{STARTRC}{ENDRC}}, caption={Statements insertion before an existing statement using Soot}\label{lst:apitracker-stmt-insert}]
+% PatchingChain<Unit> pchn = body.getUnits();
 				
-Iterator<Unit> itchain = pchn.snapshotIterator();    
-while (itchain.hasNext()) {
-    // get current statement that's being analyzed
-    Stmt s = (Stmt) itchain.next();
+% Iterator<Unit> itchain = pchn.snapshotIterator();    
+% while (itchain.hasNext()) {
+%     // get current statement that's being analyzed
+%     Stmt s = (Stmt) itchain.next();
 
-    // add other statements that should be inserted
-    // in the current body
-    stmtList.add(...);
-    stmtList.add(...);
+%     // add other statements that should be inserted
+%     // in the current body
+%     stmtList.add(...);
+%     stmtList.add(...);
     
-    InstrumManager.v().insertBeforeNoRedirect(pchn, stmtList, s);
-}
-\end{lstlisting}
+%     InstrumManager.v().insertBeforeNoRedirect(pchn, stmtList, s);
+% }
+% \end{lstlisting}
 
 % describe how the things are created to capture the argumetns
 % how the Monitor method is called
@@ -185,20 +206,33 @@ Then, if this flag was activated, it would pass the \ic{-monitorApiCalls} argume
 
 At the second phase of the execution, a reboot simulation after the APK is installed on the emulator was also added. This was done to try to detect malware that had a flexible activation mechanism based on the device reboot. This reboot is done by issuing a specific Android intent, using the command at \ref{lst:droidxp-intent-reboot}. Also at the second phase, Android ADB's logcat\cite{noauthor_logcat_2023} starts listening for any logs tagged with ``apicall-monitor'', and saves them to a specific file for further parsing and analysis.
 
-\begin{lstlisting}[language=bash,caption={Android Debug Bridge command command used to broadcast an Android intent through the system's activiy manager.}\label{lst:droidxp-intent-reboot}]
-    adb shell am broadcast -a \
-    android.intent.action.BOOT_COMPLETED
-\end{lstlisting}
+\begin{figure}
+    \centering
+    \includegraphics{img/adb-boot.png}
+    \caption{Android Debug Bridge command command used to broadcast an Android intent through the system's activiy manager.}
+    \label{lst:droidxp-intent-reboot}
+\end{figure}
+
+% \begin{lstlisting}[language=bash,caption={Android Debug Bridge command command used to broadcast an Android intent through the system's activiy manager.}\label{lst:droidxp-intent-reboot}]
+%     adb shell am broadcast -a \
+%     android.intent.action.BOOT_COMPLETED
+% \end{lstlisting}
 
 At the third phase of the execution, the logs captured in the logcat file for each executed APK are correctly parsed and converted to the CSV format.
 
-It's also important to notice that some changes were made on the method that checks if the emulator has finished booting: in the previous version, sometimes the device wasn't ready yet when the countdown started. It was problematic on some executions, and a new command was added to check for a specific system property. The exact command is present on listing \ref{lst:droidxp-wait-boot-complete}.
+It's also important to notice that some changes were made on the method that checks if the emulator has finished booting: in the previous version, sometimes the device wasn't ready yet when the countdown started. It was problematic on some executions, and a new command was added to check for a specific system property. The exact command is present on Figure \ref{lst:droidxp-wait-boot-complete}.
 
-\begin{lstlisting}[language=bash,caption={Android Debug Bridge command command used to wait for the device boot to complete.}\label{lst:droidxp-wait-boot-complete}]
-    adb wait-for-device shell \
-    `while [[ -z $(getprop sys.boot_completed) ]]; \
-do sleep 1; done;'
-\end{lstlisting}
+\begin{figure}
+    \centering
+    \includegraphics{img/adb-wait-device.png}
+    \caption{Android Debug Bridge command command used to wait for the device boot to complete.}
+    \label{lst:droidxp-wait-boot-complete}
+\end{figure}
+% \begin{lstlisting}[language=bash,caption={Android Debug Bridge command command used to wait for the device boot to complete.}\label{lst:droidxp-wait-boot-complete}]
+%     adb wait-for-device shell \
+%     `while [[ -z $(getprop sys.boot_completed) ]]; \
+% do sleep 1; done;'
+% \end{lstlisting}
 
 With all the changes, it was possible to run the tool with a custom parameter, perform the newly implemented instrumentation process and collect the arguments passed for the sensitive methods of each analyzed app. The results were stored in the same way they were stored before, along with a new file called ``sensitiveMtdArgs.csv'', containing the methods and arguments that were captured during the execution of the application.
 
