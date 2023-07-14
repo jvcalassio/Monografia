@@ -1,7 +1,7 @@
 %In this paper, the approaches presented by the works of Costa et al. \cite{costa_exploring_2022} and Le et al. \cite{le_towards_2018} will be extended and combined by implementing a new version of DroidXP that's capable of capturing the arguments input to sensitive methods during the dynamic analysis. Le's work \cite{le_towards_2018} show that this new technique outperforms the previous mining sandbox previously proposed by Jamrozki et al. \cite{jamrozik_mining_2016} that only compared which sensitive API calls were made between each version of the app. 
 % nao acho que cabe aqui. ja falei na intro, e vou falar dnv na study settings (parece mais apropriado la)
 
-In this section, the implementation details of this new version of DroidXP (and it's underlying engine, DroidFax) will be disclosed, along with the tool used to calculate the differences between executions.
+In this chapter, the implementation details of this new version of DroidXP (and it's underlying engine, DroidFax) will be disclosed, along with the tool used to calculate the differences between executions.
 
 \section{DroidFax and Soot instrumentation}
 
@@ -22,7 +22,7 @@ The \ic{Options} class is an utility class, mainly used to parse parameters pass
 
 The \ic{Monitor} class is a class that's injected into the final Android app. It implements an \ic{apiCall} method, that receives a string and an array of Java objects.
 
-The string represent the signature of the method that's going to be called. The Java objects represent each argument that is passed to this method, ordered. Given that the arguments must be passed as an array of \ic{Object}, every Java primitive type must be converted into it's boxed equivalent before being inserted into the array.
+The string represents the signature of the method that's going to be called. The Java objects represent each argument that is passed to this method, ordered. Given that the arguments must be passed as an array of \ic{Object}, every Java primitive type must be converted into it's boxed equivalent before being inserted into the array.
 
 The argument array is converted into a comma separated string, by transforming each object into it's string representation (every Java \ic{Object} implement a \ic{toString()} method) and escaping line breaks and double quotes. Null values are replaced by the ``null'' string, to avoid null pointer exceptions. 
 
@@ -106,15 +106,15 @@ This procedure is made by:
 
     However, not every argument will be assignable to an \ic{Object}. If a variable of a primitive type is passed to a Java \ic{Object} type, a JVM error will be raised and the application will stop running. For this reason, it was necessary to convert primitive types to their corresponding boxed types.
 
-    \begin{enumerate}
-        \item Handling primitive types
+    % \begin{enumerate}
+    %     \item Handling primitive types
 
         Every Soot \ic{Value} instance have a \textit{type} property. This type is a subclass of a generic \ic{Type} class, such as \ic{PrimType}, \ic{RefLikeType}, etc.. For every argument, we check if their type is an instance of \ic{PrimType}, and if they are, we can find a \ic{RefLikeType} that represents the boxed type using the \ic{PrimType.boxedType()} method.
 
         After discovering the corresponding boxed type, it's necessary to perform the conversion. Firstly, a new local variable typed as the boxed type is generated, and then a verification is made to ensure that this type implements a \ic{valueOf} method receiving the primitive type as an argument. By default, every Java boxed type should implement this method, but the check is made to ensure that the instrumentation won't fail.
 
         After we're sure that the class implements the \ic{valueOf} method, a new invoke expression statement is created, along with the assignment statement for the created variable. The boxed value is now ready to be inserted into our array of objects, and this is also done by creating a new Soot statement.
-    \end{enumerate}
+    % \end{enumerate}
 
     \item Create the invocation of the \ic{apiCall} method
 
