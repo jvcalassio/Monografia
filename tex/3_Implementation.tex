@@ -204,7 +204,7 @@ Firstly, it was necessary to add an optional parameter in the DroidXP's CLI that
 
 Then, if this flag was activated, it would pass the \ic{-monitorApiCalls} argument for the instrumentation at the first phase of the execution (instrumentation). 
 
-At the second phase of the execution, a reboot simulation after the APK is installed on the emulator was also added. This was done to try to detect malware that had a flexible activation mechanism based on the device reboot. This reboot is done by issuing a specific Android intent, using the command at \ref{lst:droidxp-intent-reboot}. Also at the second phase, Android ADB's logcat\cite{noauthor_logcat_2023} starts listening for any logs tagged with ``apicall-monitor'', and saves them to a specific file for further parsing and analysis.
+At the second phase of the execution, a reboot simulation after the APK is installed on the emulator was also added. This was done to try to detect malware that had a flexible activation mechanism based on the device reboot. This reboot is done by issuing a specific Android intent, using the command at \ref{lst:droidxp-intent-reboot}. Also at the second phase, Android ADB's logcat \cite{noauthor_logcat_2023} starts listening for any logs tagged with ``apicall-monitor'', and saves them to a specific file for further parsing and analysis.
 
 \begin{figure}
     \centering
