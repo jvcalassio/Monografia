@@ -33,7 +33,7 @@ Since the application code is compiled to a DEX bytecode, some characteristics a
 \section{The Mining Android Sandbox (MAS) technique}
 
 % talk about Jamroski and his work with Boxmate
-The mining sandboxes approach for the Android platform was first proposed by Jamroski et al. and consists of exploring the behaviour of software by extracting the accessed resources through an automated test generation, and then constructing a sandbox based on those resources \cite{jamrozik_mining_2016}. This ``mined'' sandbox would then prevent and detect unexpected behaviour changes, such as latent malware, infections, malicious updates, etc..
+The mining sandboxes approach for the Android platform was first proposed by Jamroski et al. and consists of exploring the behaviour of software by extracting the accessed resources through an automated test generation, and then constructing a sandbox based on those resources \cite{jamrozik_mining_2016}. This ``mined'' sandbox would then prevent and detect unexpected behaviour changes, such as latent malware, infections, malicious updates, etc.
 
 Jamroski et al. introduced a tool called \textit{Boxmate}, that performs such mining sandbox technique, and creates a resulting sandbox much more fine-grained than the original sandbox present on the Android operating system. Boxmate uses a tool called \textit{Droidmate} as test generation tool. However, this study only evaluated the effectiveness of this technique on benign apps, and didn't investigate if it was effective in detecting malware.
 
